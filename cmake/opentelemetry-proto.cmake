@@ -279,6 +279,8 @@ if(WITH_OTLP_GRPC)
   if (grpc_lib_type STREQUAL "SHARED_LIBRARY")
     target_link_libraries(opentelemetry_proto_grpc
       PUBLIC gRPC::grpc++)
+  else()
+    target_link_libraries(opentelemetry_proto_grpc PRIVATE gRPC::grpc++)    
   endif()
   set_target_properties(opentelemetry_proto_grpc PROPERTIES EXPORT_NAME
                                                             proto_grpc)

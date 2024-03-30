@@ -13,7 +13,22 @@ if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12")
   cmake_policy(SET CMP0074 NEW)
 endif()
 
+# Enable building OTLP gRPC
+set(WITH_OTLP_GRPC ON)
+set(WITH_ABSEIL ON)
+
 project(opentelemetry-cpp)
+
+# https://wrayx.uk/posts/configure-vscode-env-for-cpp-on-macos/
+# Tell compiler to use C++ 14 features which is needed because
+# Clang version is often behind in the XCode installation
+set(CMAKE_CXX_STANDARD 14)
+
+# https://stackoverflow.com/questions/10851247/how-do-i-activate-c-11-in-cmake
+# Fix behavior of CMAKE_CXX_STANDARD when targeting macOS.
+if (POLICY CMP0025)
+  cmake_policy(SET CMP0025 NEW)
+endif ()
 
 # Mark variables as used so cmake doesn't complain about them
 mark_as_advanced(CMAKE_TOOLCHAIN_FILE)
