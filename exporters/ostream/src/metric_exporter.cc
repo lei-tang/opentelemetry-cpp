@@ -92,8 +92,10 @@ sdk::common::ExportResult OStreamMetricExporter::Export(
     return sdk::common::ExportResult::kFailure;
   }
 
+  int i=0;
   for (auto &record : data.scope_metric_data_)
   {
+    std::cout<< "\n\n*** Record " << i++ << std::endl;
     printInstrumentationInfoMetricData(record, data);
   }
   return sdk::common::ExportResult::kSuccess;
@@ -134,18 +136,21 @@ void OStreamMetricExporter::printInstrumentationInfoMetricData(
   sout_ << "\n  scope name\t: " << info_metric.scope_->GetName()
         << "\n  schema url\t: " << info_metric.scope_->GetSchemaURL()
         << "\n  version\t: " << info_metric.scope_->GetVersion();
+  int i = 0;
   for (const auto &record : info_metric.metric_data_)
   {
+    sout_ << "\n\n  *** metric_data_ " << i++ << "\t: ";
     sout_ << "\n  start time\t: " << timeToString(record.start_ts)
           << "\n  end time\t: " << timeToString(record.end_ts)
           << "\n  instrument name\t: " << record.instrument_descriptor.name_
           << "\n  description\t: " << record.instrument_descriptor.description_
           << "\n  unit\t\t: " << record.instrument_descriptor.unit_;
-
+    int j = 0;
     for (const auto &pd : record.point_data_attr_)
     {
       if (!nostd::holds_alternative<sdk::metrics::DropPointData>(pd.point_data))
       {
+        sout_ << "\n\n  *** point_data " << j++ << "\t: ";
         printPointData(pd.point_data);
         printPointAttributes(pd.attributes);
       }
