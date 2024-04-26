@@ -93,6 +93,74 @@ TEST(OStreamMetricsExporter, ExportSumPointData)
   ASSERT_EQ(stdoutOutput.str(), expected_output);
 }
 
+TEST(OStreamMetricsExporter, ExportMonitoredResourceSumPointData)
+{
+  auto exporter =
+      std::unique_ptr<metric_sdk::PushMetricExporter>(new exportermetrics::OStreamMetricExporter);
+
+  metric_sdk::SumPointData sum_point_data{};
+  sum_point_data.value_ = 10.0;
+  metric_sdk::SumPointData sum_point_data2{};
+  sum_point_data2.value_ = 20.0;
+  metric_sdk::ResourceMetrics data;
+  auto resource = opentelemetry::sdk::resource::Resource::Create(
+      opentelemetry::sdk::resource::ResourceAttributes{{"gcp.resource_type", "k8s.container"}});
+  data.resource_ = &resource;
+  auto scope     = opentelemetry::sdk::instrumentationscope::InstrumentationScope::Create(
+      "istio.io", "1.2.0");
+  metric_sdk::MetricData metric_data{
+      metric_sdk::InstrumentDescriptor{"istio.io/server-request-count", "server request count", "unit",
+                                       metric_sdk::InstrumentType::kCounter,
+                                       metric_sdk::InstrumentValueType::kDouble},
+      metric_sdk::AggregationTemporality::kDelta, opentelemetry::common::SystemTimestamp{},
+      opentelemetry::common::SystemTimestamp{},
+      std::vector<metric_sdk::PointDataAttributes>{
+          {metric_sdk::PointAttributes{{"source-workload-name", "foo"}, {"destination-workload-name", "bar"}}, sum_point_data},
+          {metric_sdk::PointAttributes{{"source-workload-name", "foo"}, {"destination-workload-name", "bar"}}, sum_point_data2}}};
+  data.scope_metric_data_ = std::vector<metric_sdk::ScopeMetrics>{
+      {scope.get(), std::vector<metric_sdk::MetricData>{metric_data}}};
+
+  std::stringstream stdoutOutput;
+  std::streambuf *sbuf = std::cout.rdbuf();
+  std::cout.rdbuf(stdoutOutput.rdbuf());
+
+  auto result = exporter->Export(data);
+  EXPECT_EQ(result, opentelemetry::sdk::common::ExportResult::kSuccess);
+  std::cout.rdbuf(sbuf);
+
+  std::cout<<stdoutOutput.str()<<std::endl;
+
+  std::string expected_output =
+      "{"
+      "\n  scope name\t: istio.io"
+      "\n  schema url\t: "
+      "\n  version\t: 1.2.0"
+      "\n  start time\t: Thu Jan  1 00:00:00 1970"
+      "\n  end time\t: Thu Jan  1 00:00:00 1970"
+      "\n  instrument name\t: istio.io/server-request-count"
+      "\n  description\t: server request count"
+      "\n  unit\t\t: unit"
+      "\n  type\t\t: SumPointData"
+      "\n  value\t\t: 10"
+      "\n  attributes\t\t: "
+      "\n\tdestination-workload-name: bar"
+      "\n\tsource-workload-name: foo"
+      "\n  type\t\t: SumPointData"
+      "\n  value\t\t: 20"
+      "\n  attributes\t\t: "
+      "\n\tdestination-workload-name: bar"
+      "\n\tsource-workload-name: foo"
+      "\n  resources\t:"
+      "\n\tgcp.resource_type: k8s.container"
+      "\n\tservice.name: unknown_service"
+      "\n\ttelemetry.sdk.language: cpp"
+      "\n\ttelemetry.sdk.name: opentelemetry"
+      "\n\ttelemetry.sdk.version: ";
+  expected_output += OPENTELEMETRY_SDK_VERSION;
+  expected_output += "\n}\n";
+  ASSERT_EQ(stdoutOutput.str(), expected_output);
+}
+
 TEST(OStreamMetricsExporter, ExportHistogramPointData)
 {
   auto exporter =
