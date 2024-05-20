@@ -85,6 +85,10 @@ int main(int argc, char *argv[])
   {
     foo_library::counter_example(name);
   }
+  else if (example_type == "istio_request_count")
+  {
+    foo_library::istio_request_count_example();
+  }
   else if (example_type == "observable_counter")
   {
     foo_library::observable_counter_example(name);

@@ -1,7 +1,8 @@
 {
     "cmake.debugConfig": {
         "args": [
-          "counter"
+          "0.0.0.0:4317",
+          "istio_request_count"
         ]
       }
 }

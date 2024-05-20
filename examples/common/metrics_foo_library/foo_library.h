@@ -9,6 +9,7 @@ class foo_library
 {
 public:
   static void counter_example(const std::string &name);
+  static void istio_request_count_example();
   static void histogram_example(const std::string &name);
   static void observable_counter_example(const std::string &name);
 };
